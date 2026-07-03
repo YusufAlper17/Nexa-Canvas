@@ -7,7 +7,9 @@ import {
     Type
 } from 'lucide-react'
 import ModelSelector from '../../Selectors/ModelSelector'
-import { simulateGeneration, generateSeed } from '../../../data/mockData'
+import { generateSeed } from '../../../data/mockData'
+import { generateText } from '../../../services/generationService'
+import { completeGenerationTask, createGenerationTask, failGenerationTask } from '../../../services/generationQueue'
 import './NodeStyles.css'
 
 function TextNode({ id, data, selected }) {
@@ -22,6 +24,7 @@ function TextNode({ id, data, selected }) {
     })
     const [isGenerating, setIsGenerating] = useState(false)
     const [generatedContent, setGeneratedContent] = useState(data.generatedContent || null)
+    const [errorMessage, setErrorMessage] = useState('')
 
     const getConnectedInput = useCallback(() => {
         const edges = getEdges()
@@ -36,14 +39,20 @@ function TextNode({ id, data, selected }) {
     const connectedInput = getConnectedInput()
 
     const handleGenerate = async () => {
+        const effectivePrompt = prompt || data.placeholder || data.label || ''
+        const taskId = createGenerationTask({ type: 'text', label: effectivePrompt || 'Text generation' })
         setIsGenerating(true)
+        setErrorMessage('')
 
-        const result = await simulateGeneration('text', 2000)
-
-        if (result) {
+        try {
+            const result = await generateText({
+                prompt: effectivePrompt,
+                connectedInput,
+                selectedModel,
+            })
             const content = {
                 ...result,
-                prompt: prompt || connectedInput?.content || 'Generated text',
+                prompt: result.prompt || effectivePrompt || connectedInput?.content || 'Generated text',
                 seed: generateSeed()
             }
             setGeneratedContent(content)
@@ -54,9 +63,14 @@ function TextNode({ id, data, selected }) {
                 }
                 return node
             }))
+            completeGenerationTask(taskId, content.title)
+        } catch (error) {
+            const message = error?.message || 'Text generation failed.'
+            setErrorMessage(message)
+            failGenerationTask(taskId, message)
+        } finally {
+            setIsGenerating(false)
         }
-
-        setIsGenerating(false)
     }
 
     const handleContentClick = () => {
@@ -66,7 +80,7 @@ function TextNode({ id, data, selected }) {
     }
 
     return (
-        <div className={`flora-node ${selected ? 'selected' : ''}`} data-id="text-block">
+        <div className={`canvas-node ${selected ? 'selected' : ''}`} data-id="text-block">
             {/* Node Header Toolbar with Generate Button */}
             <div className="node-header-toolbar">
                 <div className="toolbar-left">
@@ -97,7 +111,7 @@ function TextNode({ id, data, selected }) {
             </div>
 
             {/* Main Node Container */}
-            <div className="flora-node-container">
+            <div className="canvas-node-container">
                 <div className="node-info-hint">
                     <Info size={14} />
                     <span>Learn about Text Blocks</span>
@@ -120,6 +134,11 @@ function TextNode({ id, data, selected }) {
                             <p className="input-hint">Using connected input as context</p>
                         </div>
                     ) : null}
+                    {errorMessage && (
+                        <div className="generation-error">
+                            {errorMessage}
+                        </div>
+                    )}
                 </div>
 
                 {/* Bottom prompt area with Generate button */}
@@ -156,12 +175,12 @@ function TextNode({ id, data, selected }) {
                 </div>
             </div>
 
-            {/* Handles with CirclePlus icons - Flora style */}
+            {/* Handles with CirclePlus icons */}
             <Handle
                 type="target"
                 position={Position.Left}
                 id={`${id}-target`}
-                className="flora-handle flora-handle-target"
+                className="canvas-handle canvas-handle-target"
             >
                 <div className="handle-icon">
                     <CirclePlus size={24} />
@@ -172,7 +191,7 @@ function TextNode({ id, data, selected }) {
                 type="source"
                 position={Position.Right}
                 id={`${id}-source`}
-                className="flora-handle flora-handle-source"
+                className="canvas-handle canvas-handle-source"
             >
                 <div className="handle-icon">
                     <CirclePlus size={24} />

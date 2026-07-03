@@ -1,0 +1,155 @@
+.api-settings-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.64);
+    backdrop-filter: blur(12px);
+}
+
+.api-settings-modal {
+    width: min(760px, 100%);
+    max-height: min(840px, 90vh);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #09090b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: white;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+}
+
+.api-settings-header,
+.api-settings-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.api-settings-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: none;
+    color: var(--text-secondary);
+    font-size: 13px;
+}
+
+.api-settings-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.api-settings-title h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.api-settings-header p,
+.api-settings-section p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.api-settings-close,
+.api-settings-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.api-settings-close {
+    width: 36px;
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+}
+
+.api-settings-save {
+    padding: 0 14px;
+    background: var(--brand-accent);
+    color: #001015;
+    font-weight: 700;
+}
+
+.api-settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.api-settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+}
+
+.api-settings-section h3 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.api-settings-section label {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.api-settings-section input,
+.api-settings-section select {
+    width: 100%;
+    min-height: 38px;
+    padding: 0 12px;
+    background: rgba(0, 0, 0, 0.32);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: white;
+    font: inherit;
+}
+
+.api-settings-section input:focus,
+.api-settings-section select:focus {
+    outline: none;
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 3px rgba(0, 217, 255, 0.12);
+}
+
+.api-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+@media (max-width: 720px) {
+    .api-settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .api-settings-header,
+    .api-settings-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

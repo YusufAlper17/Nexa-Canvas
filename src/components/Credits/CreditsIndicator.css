@@ -53,8 +53,14 @@
 }
 
 .credits-value {
-    color: #00d9ff;
-    /* brand-accent */
     font-family: inherit;
     font-weight: 600;
+}
+
+.credits-value.ready {
+    color: #86efac;
+}
+
+.credits-value.missing {
+    color: #00d9ff;
 }

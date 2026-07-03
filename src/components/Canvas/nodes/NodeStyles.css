@@ -1,9 +1,9 @@
 /* ============================================
-   FLORA NODE STYLES - Complete Implementation
+   CANVAS NODE STYLES
    ============================================ */
 
 /* Base Node Container */
-.flora-node {
+.canvas-node {
     position: relative;
     display: flex;
     flex-direction: column;
@@ -14,12 +14,12 @@
     transition: width 0.3s ease;
 }
 
-.flora-node.flora-node-video-type {
+.canvas-node.canvas-node-video-type {
     min-width: 280px;
     max-width: 500px;
 }
 
-.flora-node.selected .flora-node-container {
+.canvas-node.selected .canvas-node-container {
     border-color: rgba(34, 197, 94, 0.5);
     box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
 }
@@ -342,7 +342,7 @@
 /* ============================================
    MAIN NODE CONTAINER (Card)
    ============================================ */
-.flora-node-container {
+.canvas-node-container {
     position: relative;
     background: rgba(20, 20, 20, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -353,7 +353,7 @@
 }
 
 /* 3D Border Effect */
-.flora-node-container::before {
+.canvas-node-container::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -422,6 +422,30 @@
 .node-image-area:hover,
 .node-video-area:hover {
     background: rgba(255, 255, 255, 0.02);
+}
+
+.node-file-input {
+    display: none;
+}
+
+.generation-error {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.28);
+    border-radius: 10px;
+    color: #fecaca;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.generation-error.overlay {
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    margin-top: 0;
+    backdrop-filter: blur(12px);
 }
 
 /* Generated Content Styles */
@@ -689,11 +713,11 @@
 }
 
 /* ============================================
-   HANDLES (Connection Points) - Flora Style
+   HANDLES (Connection Points)
    ============================================ */
 
 /* Base handle - at node edge for proper connections */
-.flora-handle {
+.canvas-handle {
     width: 24px !important;
     height: 24px !important;
     background: transparent !important;
@@ -707,18 +731,18 @@
     z-index: 10;
 }
 
-.flora-node:hover .flora-handle {
+.canvas-node:hover .canvas-handle {
     opacity: 1;
 }
 
 /* Target handle - left side, edge connects at node border */
-.flora-handle-target {
+.canvas-handle-target {
     left: -12px !important;
     right: auto !important;
 }
 
 /* Source handle - right side, edge connects at node border */
-.flora-handle-source {
+.canvas-handle-source {
     right: -12px !important;
     left: auto !important;
 }
@@ -733,15 +757,15 @@
     pointer-events: none;
 }
 
-.flora-handle:hover .handle-icon {
+.canvas-handle:hover .handle-icon {
     color: white;
 }
 
-.flora-handle-source:hover {
+.canvas-handle-source:hover {
     transform: translateX(4px);
 }
 
-.flora-handle-target:hover {
+.canvas-handle-target:hover {
     transform: translateX(-4px);
 }
 
@@ -752,7 +776,7 @@
 }
 
 /* ============================================
-   EDGE STYLES - Flora Bezier Curves  
+   EDGE STYLES - Bezier Curves  
    ============================================ */
 .react-flow__edge-path {
     stroke: rgba(255, 255, 255, 0.25);

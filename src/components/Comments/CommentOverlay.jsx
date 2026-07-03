@@ -36,8 +36,6 @@ function CommentOverlay({
 
             document.addEventListener('click', handleClick)
             return () => document.removeEventListener('click', handleClick)
-        } else {
-            setPendingPosition(null)
         }
     }, [isCommenting, reactFlowInstance])
 

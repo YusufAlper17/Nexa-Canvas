@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { Plus, Type, Image, Video } from 'lucide-react'
 import './EmptyCanvas.css'
 
@@ -18,13 +19,13 @@ function EmptyCanvas({ onAddNode }) {
                 <p>Add your first block to begin</p>
 
                 <div className="quick-add-buttons">
-                    {nodeTypes.map(({ type, icon: Icon, label, description }) => (
+                    {nodeTypes.map(({ type, icon, label, description }) => (
                         <button
                             key={type}
                             className="quick-add-btn"
                             onClick={() => onAddNode(type)}
                         >
-                            <Icon size={20} />
+                            {createElement(icon, { size: 20 })}
                             <span className="btn-label">{label}</span>
                             <span className="btn-description">{description}</span>
                         </button>

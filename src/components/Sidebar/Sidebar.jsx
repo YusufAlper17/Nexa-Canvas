@@ -14,6 +14,7 @@ import {
     Settings,
     Workflow
 } from 'lucide-react'
+import { appConfig } from '../../data/appConfig'
 import './Sidebar.css'
 
 function Sidebar({ collapsed, onCollapse }) {
@@ -46,7 +47,7 @@ function Sidebar({ collapsed, onCollapse }) {
             <div className="sidebar-header">
                 <a href="/dashboard" className="logo-link">
                     <div className="logo-icon">M</div>
-                    <span className="logo-text">MEZODIGI</span>
+                    <span className="logo-text">{appConfig.shortName}</span>
                 </a>
                 <button className="collapse-btn" onClick={onCollapse}>
                     <PanelLeftClose size={18} />
@@ -107,9 +108,9 @@ function Sidebar({ collapsed, onCollapse }) {
                 {/* Pro Card */}
                 <div className="pro-card">
                     <div className="pro-indicator"></div>
-                    <h4>Mezo Pro'yu Edinin</h4>
-                    <p>4K üretim ve video araçlarının kilidini açın.</p>
-                    <button className="pro-btn">Yükselt</button>
+                    <h4>Bring Your Own Key</h4>
+                    <p>Connect your preferred AI providers from API Settings.</p>
+                    <button className="pro-btn">Configure</button>
                 </div>
 
                 {/* Actions */}

@@ -8,7 +8,7 @@
     background-color: #0c0c0c;
 }
 
-/* Edge Styles - Bezier curved lines like Flora */
+/* Edge Styles - Bezier curved lines */
 .react-flow__edge-path {
     stroke: rgba(255, 255, 255, 0.25);
     stroke-width: 3;
@@ -29,7 +29,7 @@
     stroke-width: 2;
 }
 
-/* Handle Styles - Plus button style like Flora */
+/* Handle Styles - Plus button style */
 .react-flow__handle {
     width: 24px;
     height: 24px;

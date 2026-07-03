@@ -1,12 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
+import { subscribeGenerationQueue } from '../../services/generationQueue'
 import './QueuePanel.css'
 
 function QueuePanel() {
     const [expanded, setExpanded] = useState(false)
-    const [tasks] = useState([])
+    const [tasks, setTasks] = useState([])
+
+    useEffect(() => {
+        return subscribeGenerationQueue(setTasks)
+    }, [])
 
     const activeCount = tasks.filter(t => t.status === 'running').length
+    const completedCount = tasks.filter(t => t.status !== 'running').length
+    const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0
 
     return (
         <div className={`queue-panel ${expanded ? 'expanded' : ''}`}>
@@ -16,7 +23,7 @@ function QueuePanel() {
             >
                 <div
                     className="queue-progress"
-                    style={{ width: '0%' }}
+                    style={{ width: `${progress}%` }}
                 />
                 <div className="queue-info">
                     <span className="queue-label">Queue</span>

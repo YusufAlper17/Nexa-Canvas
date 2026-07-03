@@ -47,7 +47,6 @@ function CommentOverlay({
     const handleDragStart = (e, commentId, commentPosition) => {
         e.stopPropagation()
         const currentPos = commentPositions[commentId] || commentPosition
-        const rect = e.currentTarget.getBoundingClientRect()
         const overlayRect = overlayRef.current.getBoundingClientRect()
 
         setDraggingId(commentId)

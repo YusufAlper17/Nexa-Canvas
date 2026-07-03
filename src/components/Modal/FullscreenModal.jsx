@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { X, Download, Copy, Maximize2, ZoomIn, ZoomOut } from 'lucide-react'
+import { X, Download, Copy } from 'lucide-react'
 import './FullscreenModal.css'
 
 function FullscreenModal({ isOpen, onClose, content, type }) {

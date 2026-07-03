@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Flora Theme Colors */
+  /* Nexa Theme Colors */
   --background: #0c0c0c;
   --surface: #141414;
   --surface-hover: #1a1a1a;
@@ -13,7 +13,7 @@
   --brand-start: #6366f1;
   --brand-end: #ec4899;
 
-  /* Flora Canvas Colors */
+  /* Canvas Colors */
   --canvas-bg: #0c0c0c;
   --node-bg: rgba(0, 0, 0, 0.4);
   --toolbar-bg: rgba(0, 0, 0, 0.6);

@@ -12,7 +12,9 @@ import {
 } from 'lucide-react'
 import ModelSelector from '../../Selectors/ModelSelector'
 import { aspectRatios, stylePresets } from '../../../data/models'
-import { simulateGeneration, generateSeed } from '../../../data/mockData'
+import { generateSeed } from '../../../data/mockData'
+import { generateImage } from '../../../services/generationService'
+import { completeGenerationTask, createGenerationTask, failGenerationTask } from '../../../services/generationQueue'
 import './NodeStyles.css'
 
 function ImageNode({ id, data, selected }) {
@@ -29,11 +31,13 @@ function ImageNode({ id, data, selected }) {
     const [selectedStyle, setSelectedStyle] = useState(null)
     const [isGenerating, setIsGenerating] = useState(false)
     const [generatedContent, setGeneratedContent] = useState(data.generatedContent || null)
+    const [errorMessage, setErrorMessage] = useState('')
     const [showAspectDropdown, setShowAspectDropdown] = useState(false)
     const [showStyleDropdown, setShowStyleDropdown] = useState(false)
 
     const aspectRef = useRef(null)
     const styleRef = useRef(null)
+    const fileInputRef = useRef(null)
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -71,26 +75,72 @@ function ImageNode({ id, data, selected }) {
     const connectedInput = getConnectedInput()
 
     const handleGenerate = async () => {
+        const effectivePrompt = prompt || data.placeholder || data.label || ''
+        const taskId = createGenerationTask({ type: 'image', label: effectivePrompt || 'Image generation' })
         setIsGenerating(true)
-        const result = await simulateGeneration('image', 2500)
-        if (result) {
-            const content = { ...result, prompt: prompt || 'Generated image', seed: generateSeed() }
+        setErrorMessage('')
+        try {
+            const result = await generateImage({
+                prompt: effectivePrompt,
+                connectedInput,
+                selectedModel,
+                aspectRatio,
+                style: selectedStyle,
+            })
+            const content = { ...result, prompt: result.prompt || effectivePrompt || 'Generated image', seed: generateSeed() }
             setGeneratedContent(content)
             setNodes(nodes => nodes.map(node =>
                 node.id === id ? { ...node, data: { ...node.data, generatedContent: content } } : node
             ))
+            completeGenerationTask(taskId, content.title)
+        } catch (error) {
+            const message = error?.message || 'Image generation failed.'
+            setErrorMessage(message)
+            failGenerationTask(taskId, message)
+        } finally {
+            setIsGenerating(false)
         }
-        setIsGenerating(false)
     }
 
     const handleContentClick = () => {
         if (generatedContent && window.openFullscreen) {
             window.openFullscreen(generatedContent, 'image')
+        } else {
+            fileInputRef.current?.click()
         }
     }
 
+    const handleImageFile = (file) => {
+        if (!file || !file.type.startsWith('image/')) return
+
+        const reader = new FileReader()
+        reader.onload = () => {
+            const content = {
+                id: `uploaded-image-${Date.now()}`,
+                title: file.name,
+                url: reader.result,
+                thumbnail: reader.result,
+                model: 'Uploaded file',
+                prompt: file.name,
+                seed: generateSeed(),
+            }
+
+            setGeneratedContent(content)
+            setErrorMessage('')
+            setNodes(nodes => nodes.map(node =>
+                node.id === id ? { ...node, data: { ...node.data, generatedContent: content } } : node
+            ))
+        }
+        reader.readAsDataURL(file)
+    }
+
+    const handleDrop = (event) => {
+        event.preventDefault()
+        handleImageFile(event.dataTransfer.files?.[0])
+    }
+
     return (
-        <div className={`flora-node ${selected ? 'selected' : ''}`} style={{ width: dimensions.width }}>
+        <div className={`canvas-node ${selected ? 'selected' : ''}`} style={{ width: dimensions.width }}>
             {/* Header Toolbar */}
             <div className="node-header-toolbar">
                 <div className="toolbar-left">
@@ -155,14 +205,27 @@ function ImageNode({ id, data, selected }) {
             </div>
 
             {/* Node Container */}
-            <div className="flora-node-container flora-node-image">
+            <div className="canvas-node-container canvas-node-image">
                 <div className="node-info-hint">
                     <Info size={14} />
                     <span>Learn about Image Blocks</span>
                 </div>
                 <hr className="node-divider" />
 
-                <div className="node-image-area" onClick={handleContentClick} style={{ height: dimensions.contentHeight }}>
+                <div
+                    className="node-image-area"
+                    onClick={handleContentClick}
+                    onDrop={handleDrop}
+                    onDragOver={(event) => event.preventDefault()}
+                    style={{ height: dimensions.contentHeight }}
+                >
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="node-file-input"
+                        onChange={(event) => handleImageFile(event.target.files?.[0])}
+                    />
                     {generatedContent ? (
                         <div className="image-preview">
                             <img src={generatedContent.url} alt={generatedContent.title} />
@@ -171,6 +234,11 @@ function ImageNode({ id, data, selected }) {
                         <div className="image-dropzone">
                             <Upload size={24} />
                             <span>Drop image or click to upload</span>
+                        </div>
+                    )}
+                    {errorMessage && (
+                        <div className="generation-error overlay">
+                            {errorMessage}
                         </div>
                     )}
                 </div>
@@ -194,10 +262,10 @@ function ImageNode({ id, data, selected }) {
             </div>
 
             {/* Handles with CirclePlus icons */}
-            <Handle type="target" position={Position.Left} id={`${id}-target`} className="flora-handle flora-handle-target">
+            <Handle type="target" position={Position.Left} id={`${id}-target`} className="canvas-handle canvas-handle-target">
                 <div className="handle-icon"><CirclePlus size={24} /></div>
             </Handle>
-            <Handle type="source" position={Position.Right} id={`${id}-source`} className="flora-handle flora-handle-source">
+            <Handle type="source" position={Position.Right} id={`${id}-source`} className="canvas-handle canvas-handle-source">
                 <div className="handle-icon"><CirclePlus size={24} /></div>
             </Handle>
         </div>

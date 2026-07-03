@@ -11,7 +11,9 @@ import {
 } from 'lucide-react'
 import ModelSelector from '../../Selectors/ModelSelector'
 import { aspectRatios, stylePresets } from '../../../data/models'
-import { simulateGeneration, generateSeed } from '../../../data/mockData'
+import { generateSeed } from '../../../data/mockData'
+import { generateVideo } from '../../../services/generationService'
+import { completeGenerationTask, createGenerationTask, failGenerationTask } from '../../../services/generationQueue'
 import './NodeStyles.css'
 
 function VideoNode({ id, data, selected }) {
@@ -28,11 +30,13 @@ function VideoNode({ id, data, selected }) {
     const [selectedStyle, setSelectedStyle] = useState(null)
     const [isGenerating, setIsGenerating] = useState(false)
     const [generatedContent, setGeneratedContent] = useState(data.generatedContent || null)
+    const [errorMessage, setErrorMessage] = useState('')
     const [showAspectDropdown, setShowAspectDropdown] = useState(false)
     const [showStyleDropdown, setShowStyleDropdown] = useState(false)
 
     const aspectRef = useRef(null)
     const styleRef = useRef(null)
+    const fileInputRef = useRef(null)
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -66,24 +70,73 @@ function VideoNode({ id, data, selected }) {
     const connectedInput = getConnectedInput()
 
     const handleGenerate = async () => {
+        const effectivePrompt = prompt || data.placeholder || data.label || ''
+        const taskId = createGenerationTask({ type: 'video', label: effectivePrompt || 'Video generation' })
         setIsGenerating(true)
-        const result = await simulateGeneration('video', 3000)
-        if (result) {
-            const content = { ...result, prompt: prompt || 'Generated video', seed: generateSeed() }
+        setErrorMessage('')
+        try {
+            const result = await generateVideo({
+                prompt: effectivePrompt,
+                connectedInput,
+                selectedModel,
+                aspectRatio,
+                style: selectedStyle,
+            })
+            const content = { ...result, prompt: result.prompt || effectivePrompt || 'Generated video', seed: generateSeed() }
             setGeneratedContent(content)
             setNodes(nodes => nodes.map(node =>
                 node.id === id ? { ...node, data: { ...node.data, generatedContent: content } } : node
             ))
+            completeGenerationTask(taskId, content.title)
+        } catch (error) {
+            const message = error?.message || 'Video generation failed.'
+            setErrorMessage(message)
+            failGenerationTask(taskId, message)
+        } finally {
+            setIsGenerating(false)
         }
-        setIsGenerating(false)
     }
 
     const handleContentClick = () => {
-        if (generatedContent && window.openFullscreen) window.openFullscreen(generatedContent, 'video')
+        if (generatedContent && window.openFullscreen) {
+            window.openFullscreen(generatedContent, 'video')
+        } else {
+            fileInputRef.current?.click()
+        }
+    }
+
+    const handleVideoFile = (file) => {
+        if (!file || !file.type.startsWith('video/')) return
+
+        const reader = new FileReader()
+        reader.onload = () => {
+            const content = {
+                id: `uploaded-video-${Date.now()}`,
+                title: file.name,
+                url: reader.result,
+                thumbnail: '',
+                model: 'Uploaded file',
+                duration: '',
+                prompt: file.name,
+                seed: generateSeed(),
+            }
+
+            setGeneratedContent(content)
+            setErrorMessage('')
+            setNodes(nodes => nodes.map(node =>
+                node.id === id ? { ...node, data: { ...node.data, generatedContent: content } } : node
+            ))
+        }
+        reader.readAsDataURL(file)
+    }
+
+    const handleDrop = (event) => {
+        event.preventDefault()
+        handleVideoFile(event.dataTransfer.files?.[0])
     }
 
     return (
-        <div className={`flora-node flora-node-video-type ${selected ? 'selected' : ''}`} style={{ width: dimensions.width }}>
+        <div className={`canvas-node canvas-node-video-type ${selected ? 'selected' : ''}`} style={{ width: dimensions.width }}>
             {/* Header */}
             <div className="node-header-toolbar">
                 <div className="toolbar-left">
@@ -148,14 +201,27 @@ function VideoNode({ id, data, selected }) {
             </div>
 
             {/* Container */}
-            <div className="flora-node-container flora-node-video">
+            <div className="canvas-node-container canvas-node-video">
                 <div className="node-info-hint">
                     <Info size={14} />
                     <span>Learn about Video Blocks</span>
                 </div>
                 <hr className="node-divider" />
 
-                <div className="node-video-area" onClick={handleContentClick} style={{ height: dimensions.contentHeight }}>
+                <div
+                    className="node-video-area"
+                    onClick={handleContentClick}
+                    onDrop={handleDrop}
+                    onDragOver={(event) => event.preventDefault()}
+                    style={{ height: dimensions.contentHeight }}
+                >
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="video/*"
+                        className="node-file-input"
+                        onChange={(event) => handleVideoFile(event.target.files?.[0])}
+                    />
                     {generatedContent ? (
                         <div className="video-preview">
                             <video src={generatedContent.url} poster={generatedContent.thumbnail} muted loop
@@ -165,6 +231,11 @@ function VideoNode({ id, data, selected }) {
                     ) : (
                         <div className="video-placeholder">
                             <Play size={32} />
+                        </div>
+                    )}
+                    {errorMessage && (
+                        <div className="generation-error overlay">
+                            {errorMessage}
                         </div>
                     )}
                 </div>
@@ -188,10 +259,10 @@ function VideoNode({ id, data, selected }) {
             </div>
 
             {/* Handles with CirclePlus icons */}
-            <Handle type="target" position={Position.Left} id={`${id}-target`} className="flora-handle flora-handle-target">
+            <Handle type="target" position={Position.Left} id={`${id}-target`} className="canvas-handle canvas-handle-target">
                 <div className="handle-icon"><CirclePlus size={24} /></div>
             </Handle>
-            <Handle type="source" position={Position.Right} id={`${id}-source`} className="flora-handle flora-handle-source">
+            <Handle type="source" position={Position.Right} id={`${id}-source`} className="canvas-handle canvas-handle-source">
                 <div className="handle-icon"><CirclePlus size={24} /></div>
             </Handle>
         </div>

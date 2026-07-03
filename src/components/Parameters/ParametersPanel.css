@@ -1,7 +1,7 @@
 .parameters-sidebar {
     position: absolute;
     right: 16px;
-    top: 24px;
+    top: 80px;
     height: fit-content;
     max-height: calc(100% - 6rem);
     width: 260px;
@@ -14,6 +14,12 @@
 
 .parameters-sidebar>* {
     pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+    .parameters-sidebar {
+        display: none;
+    }
 }
 
 .sidebar-top-actions {

@@ -130,3 +130,8 @@
     background: rgba(0, 217, 255, 0.2);
     color: var(--brand-accent);
 }
+
+.task-status.failed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}

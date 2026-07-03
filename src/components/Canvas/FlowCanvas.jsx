@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import ReactFlow, {
     Background,
     useNodesState,
@@ -48,13 +48,37 @@ const initialNodes = [
 ]
 
 const initialEdges = []
+const CANVAS_STORAGE_KEY = 'nexa-canvas-state'
+
+const loadCanvasState = () => {
+    if (typeof window === 'undefined') {
+        return { nodes: initialNodes, edges: initialEdges, comments: [] }
+    }
+
+    try {
+        const stored = window.localStorage.getItem(CANVAS_STORAGE_KEY)
+        if (!stored) {
+            return { nodes: initialNodes, edges: initialEdges, comments: [] }
+        }
+
+        const parsed = JSON.parse(stored)
+        return {
+            nodes: Array.isArray(parsed.nodes) ? parsed.nodes : initialNodes,
+            edges: Array.isArray(parsed.edges) ? parsed.edges : initialEdges,
+            comments: Array.isArray(parsed.comments) ? parsed.comments : [],
+        }
+    } catch {
+        return { nodes: initialNodes, edges: initialEdges, comments: [] }
+    }
+}
 
 function FlowCanvas() {
     const reactFlowWrapper = useRef(null)
-    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-    const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+    const savedState = useMemo(() => loadCanvasState(), [])
+    const [nodes, setNodes, onNodesChange] = useNodesState(savedState.nodes)
+    const [edges, setEdges, onEdgesChange] = useEdgesState(savedState.edges)
     const [reactFlowInstance, setReactFlowInstance] = useState(null)
-    const [comments, setComments] = useState([])
+    const [comments, setComments] = useState(savedState.comments)
     const [isCommenting, setIsCommenting] = useState(false)
 
     // Fullscreen modal state
@@ -74,6 +98,10 @@ function FlowCanvas() {
         }
     }, [])
 
+    useEffect(() => {
+        window.localStorage.setItem(CANVAS_STORAGE_KEY, JSON.stringify({ nodes, edges, comments }))
+    }, [nodes, edges, comments])
+
     const onConnect = useCallback(
         (params) => {
             const newEdge = {
@@ -90,34 +118,6 @@ function FlowCanvas() {
     const onInit = useCallback((instance) => {
         setReactFlowInstance(instance)
     }, [])
-
-    // Delete node
-    const deleteNode = useCallback((nodeId) => {
-        setNodes((nds) => nds.filter((n) => n.id !== nodeId))
-        setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId))
-    }, [setNodes, setEdges])
-
-    // Duplicate node
-    const duplicateNode = useCallback((nodeId) => {
-        setNodes((nds) => {
-            const nodeToDuplicate = nds.find((n) => n.id === nodeId)
-            if (!nodeToDuplicate) return nds
-
-            const newNode = {
-                ...nodeToDuplicate,
-                id: `node-${Date.now()}`,
-                position: {
-                    x: nodeToDuplicate.position.x + 50,
-                    y: nodeToDuplicate.position.y + 50,
-                },
-                data: {
-                    ...nodeToDuplicate.data,
-                    generatedContent: null, // Reset generated content for duplicate
-                },
-            }
-            return [...nds, newNode]
-        })
-    }, [setNodes])
 
     // Add node from toolbar
     const addNode = useCallback((type = 'textNode') => {

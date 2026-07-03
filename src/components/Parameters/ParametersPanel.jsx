@@ -4,7 +4,7 @@ import {
     ChevronDown,
     RefreshCw
 } from 'lucide-react'
-import { modelProviders, getModelsByType, resolutions, durations } from '../../data/models'
+import { getModelsByType, resolutions, durations } from '../../data/models'
 import { generateSeed } from '../../data/mockData'
 import './ParametersPanel.css'
 
